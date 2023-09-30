@@ -175,9 +175,52 @@ fn problem_8() {
         min += 1;
         max += 1;
     }
-    println!("greatest product = {}",greatest_product);
-
+    println!("greatest product = {}", greatest_product);
 }
+
+fn problem_9() {
+    let triplet_check = |a: f64, b: f64, c: f64| (a + b + c) == 1000.0;
+    let case_true = |a: u64, b: u64, c: u64| a * b * c;
+
+    for b in (1..=500) {
+        for a in 1..b {
+            let c = (((a as u64).pow(2) + (b as u64).pow(2)) as f64).sqrt();
+            if triplet_check(a as f64, b as f64, c) && (a < b) && ((b as f64) < c) {
+                println!("a = {} , b = {} , c = {}", a, b, c);
+                println!("{}", case_true(a, b, c as u64));
+                exit(0);
+            }
+        }
+    }
+}
+
+fn problem_10() {
+    fn is_prime(num: u64) -> bool {
+        if num < 4 {
+            return num > 1;
+        }
+        if num % 2 == 0 {
+            return false;
+        }
+        let mut factor = 3;
+        while factor * factor <= num {
+            if num % factor == 0 {
+                return false;
+            }
+            factor += 2;
+        }
+        true
+    }
+
+    let mut sum: u128 = 2;
+    for i in (1..=2_000_000_u64).step_by(2) {
+        if is_prime(i) {
+            sum += i as u128;
+        }
+    }
+    println!("sum = {}", sum);
+}
+
 fn main() {
-    problem_8();
+    problem_10();
 }
