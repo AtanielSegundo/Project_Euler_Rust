@@ -271,22 +271,20 @@ fn problem_11() {
     };
 
     let mut max_product = 1 as u64;
-    let mut max_locations:[[i64;2];4] = [[0,0],[0,0],[0,0],[0,0]];
+    let mut max_locations = Vec::<[i64;2]>::new();
 
     for row in 0..=max_row {
         for col in 0..=max_col {
             for direction in directions {
                 let r_hat = direction[0];
                 let c_hat = direction[1];
-                let possible_states  = [
-                    [row,col],
-                    [row + 1*r_hat, col + 1*c_hat],
-                    [row + 2*r_hat, col + 2*c_hat],
-                    [row + 3*r_hat, col + 3*c_hat],
-                ];
-                if possible_states.into_iter().all(validation) == true{
+                let mut possible_states  = Vec::<[i64;2]>::new();
+                for i in 0..=3{
+                        possible_states.push([row+i*r_hat,col+i*c_hat])
+                }
+                if possible_states.clone().into_iter().all(validation) == true{
                     let mut aux_product = 1 as u64;
-                    for valid_state in possible_states{
+                    for valid_state in &possible_states{
                         let row = valid_state[0] as usize;
                         let col = valid_state[1] as usize;
                         aux_product *= matrix_chunked[row][col]
