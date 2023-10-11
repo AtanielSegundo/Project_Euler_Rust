@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{fmt::Display, ops::Range, process::exit};
 
 fn problem_1() {
@@ -182,7 +184,7 @@ fn problem_9() {
     let triplet_check = |a: f64, b: f64, c: f64| (a + b + c) == 1000.0;
     let case_true = |a: u64, b: u64, c: u64| a * b * c;
 
-    for b in (1..=500) {
+    for b in 1..=500 {
         for a in 1..b {
             let c = (((a as u64).pow(2) + (b as u64).pow(2)) as f64).sqrt();
             if triplet_check(a as f64, b as f64, c) && (a < b) && ((b as f64) < c) {
@@ -225,13 +227,21 @@ fn problem_11() {
     const DOWN: [i64; 2] = [1, 0];
     const LEFT: [i64; 2] = [0, -1];
     const RIGHT: [i64; 2] = [0, 1];
-    const DIAGONAl_PP: [i64; 2] = [1, 1];
-    const DIAGONAl_NN: [i64; 2] = [-1, -1];
-    const DIAGONAl_PN: [i64; 2] = [1, -1];
+    const DIAGONAL_PP: [i64; 2] = [1, 1];
+    const DIAGONAL_NN: [i64; 2] = [-1, -1];
+    const DIAGONAL_PN: [i64; 2] = [1, -1];
     const DIAGONAl_NP: [i64; 2] = [-1, 1];
 
-    
-    const directions: [[i64; 2];8] = [UP, DOWN, LEFT, RIGHT, DIAGONAl_PP,DIAGONAl_NN,DIAGONAl_PN,DIAGONAl_NP];
+    const directions: [[i64; 2]; 8] = [
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        DIAGONAL_PP,
+        DIAGONAL_NN,
+        DIAGONAL_PN,
+        DIAGONAl_NP,
+    ];
 
     let matrix_str = "08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
         49 49 99 40 17 81 18 57 60 87 17 40 98 43 69 48 04 56 62 00
@@ -264,32 +274,32 @@ fn problem_11() {
     let max_row = (matrix_len - 1) as i64;
     let max_col = (matrix_chunked[0].len() - 1) as i64;
 
-    let validation = |arr:[i64;2]| -> bool {
+    let validation = |arr: [i64; 2]| -> bool {
         let row = arr[0];
         let col = arr[1];
         return (row >= 0) && (row <= max_row) && (col >= 0) && (col <= max_col);
     };
 
     let mut max_product = 1 as u64;
-    let mut max_locations = Vec::<[i64;2]>::new();
+    let mut max_locations = Vec::<[i64; 2]>::new();
 
     for row in 0..=max_row {
         for col in 0..=max_col {
             for direction in directions {
                 let r_hat = direction[0];
                 let c_hat = direction[1];
-                let mut possible_states  = Vec::<[i64;2]>::new();
-                for i in 0..=3{
-                        possible_states.push([row+i*r_hat,col+i*c_hat])
+                let mut possible_states = Vec::<[i64; 2]>::new();
+                for i in 0..=3 {
+                    possible_states.push([row + i * r_hat, col + i * c_hat])
                 }
-                if possible_states.clone().into_iter().all(validation) == true{
+                if possible_states.clone().into_iter().all(validation) == true {
                     let mut aux_product = 1 as u64;
-                    for valid_state in &possible_states{
+                    for valid_state in &possible_states {
                         let row = valid_state[0] as usize;
                         let col = valid_state[1] as usize;
                         aux_product *= matrix_chunked[row][col]
                     }
-                    if aux_product >= max_product{
+                    if aux_product >= max_product {
                         max_product = aux_product;
                         max_locations = possible_states;
                     }
@@ -297,15 +307,71 @@ fn problem_11() {
             }
         }
     }
-    println!("The biggest product among all directions is : {}",max_product);
+    println!(
+        "The biggest product among all directions is : {}",
+        max_product
+    );
     println!("factor, location: [ row ][ column ]");
-    for location in max_locations{
+    for location in max_locations {
         let row = location[0] as usize;
         let col = location[1] as usize;
-        println!("  {}  , location: [  {} ][    {}   ]",matrix_chunked[row][col],row,col)
+        println!(
+            "  {}  , location: [  {} ][    {}   ]",
+            matrix_chunked[row][col], row, col
+        )
     }
 }
 
+//Dont work, see combinatory of (40,20)
+fn problem_15() {
+    const MATRIX_DIMS: (usize, usize) = (20,20);
+    const DOWN: [usize; 2] = [1, 0];
+    const RIGHT: [usize; 2] = [0, 1];
+    const MAX_ROW : usize = MATRIX_DIMS.0;
+    const MAX_COL : usize = MATRIX_DIMS.1;
+
+    fn validation(arr: [usize; 2]) -> bool {
+        let row = arr[0];
+        let col = arr[1];
+        return (row <= MAX_ROW) && (col <= MAX_COL);
+    };
+
+    fn possible_paths(start:(usize,usize),goal:(usize,usize),directions:Vec<[usize;2]>,matrix:&Vec<Vec<u16>>) -> usize{
+        let mut sum = 0;
+        if start.0 == MAX_ROW || start.1 == MAX_COL{
+            return 1;
+        }
+        for direction in &directions{
+            let (r_hat,c_hat) = (direction[0],direction[1]);
+            let next_arr = [start.0 + r_hat,start.1 + c_hat];
+            if next_arr[0] == MAX_ROW || next_arr[1] == MAX_COL{
+                return  1;
+            }
+            else{
+                if (next_arr[0] == goal.0) && (next_arr[1] == goal.1){
+                    sum += 1;
+                }
+                else {
+                    sum += possible_paths((next_arr[0],next_arr[1]),goal,directions.clone(),matrix);
+                } 
+            }
+        }
+        return sum;
+    }           
+    
+    let directions: Vec<[usize; 2]> = vec![DOWN, RIGHT];
+    let  MOVE_MATRIX: Vec<Vec<u16>> = {
+        let mut aux_vec: Vec<Vec<u16>> = Vec::new();
+        for _ in 0..=MATRIX_DIMS.0 {
+            let aux: Vec<u16> = (0..=MATRIX_DIMS.1).into_iter().map(|_| 1).collect();
+            aux_vec.push(aux);
+        }
+        aux_vec
+    };
+    println!("para uma matrix {}x{} existem : {}",MATRIX_DIMS.0,MATRIX_DIMS.1,possible_paths((0,0),(MAX_ROW,MAX_COL),directions,&MOVE_MATRIX))    
+
+}
+
 fn main() {
-    problem_11();
+    problem_15();
 }
